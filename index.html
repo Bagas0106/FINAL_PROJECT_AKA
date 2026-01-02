@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iteratif vs. Rekursif: Studi Komparatif</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-8">
+
+    <header class="max-w-6xl mx-auto mb-10 text-center space-y-2">
+        <div class="inline-block px-3 py-1 text-xs font-mono text-cyan-400 bg-cyan-950 rounded-full border border-cyan-800 mb-2">
+            ALGORITHM ANALYSIS LAB
+        </div>
+        <h1 class="text-3xl md:text-5xl font-bold text-white tracking-tight">
+            Iteratif <span class="text-slate-600">vs.</span> Rekursif
+        </h1>
+        <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-base">
+            Studi Komparatif Kompleksitas Waktu dan Running Time dalam <br>
+            <span class="text-indigo-400 font-semibold">Simulasi Proyeksi Populasi Global</span>
+        </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <section class="lg:col-span-1 space-y-6">
+            <div class="glass-panel p-6 rounded-2xl shadow-2xl">
+                <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    Parameter Simulasi
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1">Populasi Awal</label>
+                        <input type="number" id="inputPop" value="1000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 focus:border-cyan-500 focus:outline-none transition text-white font-mono">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1">Durasi (Tahun)</label>
+                        <input type="number" id="inputYears" value="50" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 focus:border-cyan-500 focus:outline-none transition text-white font-mono">
+                        <p class="text-[10px] text-rose-400 mt-1">*Hati-hati: Rekursif > 10.000 tahun bisa menyebabkan stack overflow.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1">Rate Pertumbuhan (%)</label>
+                        <input type="number" id="inputRate" value="5.0" step="0.1" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 focus:border-cyan-500 focus:outline-none transition text-white font-mono">
+                    </div>
+
+                    <button onclick="startSimulation()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transform active:scale-95 transition-all mt-4">
+                        JALANKAN SIMULASI
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl">
+                <h3 class="text-sm font-semibold text-slate-400 uppercase mb-4">Benchmark Result (Rata-rata)</h3>
+                
+                <div class="space-y-4">
+                    <div class="bg-slate-900/50 p-3 rounded-lg border-l-4 border-cyan-500">
+                        <div class="flex justify-between items-center">
+                            <span class="text-cyan-400 font-bold">Iteratif</span>
+                            <span class="text-xs text-slate-500">O(n) - Loop</span>
+                        </div>
+                        <div class="flex justify-between items-baseline mt-1">
+                            <span id="resIterTime" class="text-2xl font-mono text-white">0.00</span>
+                            <span class="text-xs text-slate-400">milidetik</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-3 rounded-lg border-l-4 border-rose-500">
+                        <div class="flex justify-between items-center">
+                            <span class="text-rose-400 font-bold">Rekursif</span>
+                            <span class="text-xs text-slate-500">O(n) - Stack</span>
+                        </div>
+                        <div class="flex justify-between items-baseline mt-1">
+                            <span id="resRecTime" class="text-2xl font-mono text-white">0.00</span>
+                            <span class="text-xs text-slate-400">milidetik</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-2 space-y-6">
+            
+            <div class="glass-panel p-4 md:p-6 rounded-2xl relative h-80">
+                <h3 class="absolute top-4 left-6 text-sm font-semibold text-slate-300">
+                    1. Grafik Proyeksi Populasi (Hasil Data)
+                </h3>
+                <canvas id="popChart"></canvas>
+            </div>
+
+            <div class="glass-panel p-4 md:p-6 rounded-2xl relative h-64">
+                <h3 class="absolute top-4 left-6 text-sm font-semibold text-slate-300">
+                    2. Perbandingan Waktu Eksekusi (Performance)
+                </h3>
+                <canvas id="perfChart"></canvas>
+            </div>
+
+        </section>
+    </main>
+
+    <footer class="text-center text-slate-600 text-sm mt-12 mb-6">
+        Dibuat untuk analisis Algoritma & Struktur Data
+    </footer>
+
+    <script>
+        function calculateIterative(pop, years, rate) {
+            let p = pop;
+            for(let i = 0; i < years; i++) {
+                p = p + (p * rate);
+            }
+            return p;
+        }
+
+        function calculateRecursive(pop, years, rate) {
+            if (years <= 0) return pop;
+            return calculateRecursive(pop + (pop * rate), years - 1, rate);
+        }
+
+        let popChartInstance = null;
+        let perfChartInstance = null;
+
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#334155';
+
+        function initCharts() {
+            const ctxPop = document.getElementById('popChart').getContext('2d');
+            const ctxPerf = document.getElementById('perfChart').getContext('2d');
+
+            popChartInstance = new Chart(ctxPop, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', align: 'end' } },
+                    interaction: { mode: 'index', intersect: false },
+                }
+            });
+
+            perfChartInstance = new Chart(ctxPerf, {
+                type: 'bar',
+                data: { 
+                    labels: ['Iteratif', 'Rekursif'],
+                    datasets: [{
+                        label: 'Waktu Eksekusi (ms)',
+                        data: [0, 0],
+                        backgroundColor: ['#06b6d4', '#f43f5e'], 
+                        borderRadius: 6,
+                        barThickness: 40
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+        }
+
+
+        
+        function startSimulation() {
+            const initialPop = parseFloat(document.getElementById('inputPop').value);
+            const years = parseInt(document.getElementById('inputYears').value);
+            const ratePercent = parseFloat(document.getElementById('inputRate').value);
+            const rate = ratePercent / 100;
+
+            if(years > 10000) {
+                alert("Peringatan: Tahun terlalu besar untuk Rekursi (Risiko Stack Overflow). Mohon kurangi < 10.000");
+                return;
+            }
+
+            const labels = [];
+            const dataIter = [];
+            const dataRec = [];
+
+            let currentIter = initialPop;
+            let currentRec = initialPop; 
+
+            for(let i=0; i<=years; i++) {
+                labels.push("Thn " + i);
+                
+                dataIter.push(currentIter);
+                currentIter = currentIter + (currentIter * rate);
+
+                if(i===0) dataRec.push(initialPop);
+                else 
+                   dataRec.push(calculateRecursive(initialPop, i, rate));
+                }
+            }
+
+            popChartInstance.data.labels = labels;
+            popChartInstance.data.datasets = [
+                {
+                    label: 'Iteratif (Loop)',
+                    data: dataIter,
+                    borderColor: '#06b6d4', 
+                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                    borderWidth: 6,        
+                    pointRadius: 0,
+                    tension: 0.3
+                },
+                {
+                    label: 'Rekursif (Self-Call)',
+                    data: dataRec,
+                    borderColor: '#f43f5e', 
+                    backgroundColor: 'rgba(244, 63, 94, 0.0)',
+                    borderWidth: 3,         
+                    borderDash: [5, 5],     
+                    pointRadius: 2,
+                    pointBackgroundColor: '#fff',
+                    tension: 0.3
+                }
+            ];
+            popChartInstance.update();
+
+            const iterations = 2000; 
+            
+
+            const t1 = performance.now();
+            for(let k=0; k<iterations; k++) {
+                calculateIterative(initialPop, years, rate);
+            }
+            const t2 = performance.now();
+            const iterAvg = (t2 - t1).toFixed(4);
+
+            const t3 = performance.now();
+            for(let k=0; k<iterations; k++) {
+                calculateRecursive(initialPop, years, rate);
+            }
+            const t4 = performance.now();
+            const recAvg = (t4 - t3).toFixed(4);
+
+
+            document.getElementById('resIterTime').innerText = iterAvg;
+            document.getElementById('resRecTime').innerText = recAvg;
+
+
+            perfChartInstance.data.datasets[0].data = [parseFloat(iterAvg), parseFloat(recAvg)];
+            perfChartInstance.update();
+        }
+
+
+        window.onload = function() {
+            initCharts();
+            startSimulation(); 
+        };
+
+    </script>
+</body>
+</html>
