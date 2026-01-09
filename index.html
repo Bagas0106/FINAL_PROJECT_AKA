@@ -121,152 +121,143 @@
         Dibuat untuk analisis Algoritma & Struktur Data
     </footer>
 
-    <script>
-        function calculateIterative(pop, years, rate) {
-            let p = pop;
-            for(let i = 0; i < years; i++) {
-                p = p + (p * rate);
+<script>
+    function calculateIterative(pop, years, rate) {
+        let p = pop;
+        for(let i = 0; i < years; i++) {
+            p = p + (p * rate);
+        }
+        return p;
+    }
+
+    function calculateRecursive(pop, years, rate) {
+        if (years <= 0) return pop;
+        return calculateRecursive(pop + (pop * rate), years - 1, rate);
+    }
+
+    let popChartInstance = null;
+    let perfChartInstance = null;
+
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = '#334155';
+
+    function initCharts() {
+        const ctxPop = document.getElementById('popChart').getContext('2d');
+        const ctxPerf = document.getElementById('perfChart').getContext('2d');
+
+        popChartInstance = new Chart(ctxPop, {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', align: 'end' } },
+                interaction: { mode: 'index', intersect: false },
             }
-            return p;
+        });
+
+        perfChartInstance = new Chart(ctxPerf, {
+            type: 'bar',
+            data: { 
+                labels: ['Iteratif', 'Rekursif'],
+                datasets: [{
+                    label: 'Waktu Eksekusi (ms)',
+                    data: [0, 0],
+                    backgroundColor: ['#06b6d4', '#f43f5e'], 
+                    borderRadius: 6,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                indexAxis: 'y', 
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true } }
+            }
+        });
+    }
+
+    function startSimulation() {
+        const initialPop = parseFloat(document.getElementById('inputPop').value);
+        const years = parseInt(document.getElementById('inputYears').value);
+        const ratePercent = parseFloat(document.getElementById('inputRate').value);
+        const rate = ratePercent / 100;
+
+        if(years > 10000) {
+            alert("Peringatan: Tahun terlalu besar untuk Rekursi. Mohon kurangi < 10.000");
+            return;
         }
 
-        function calculateRecursive(pop, years, rate) {
-            if (years <= 0) return pop;
-            return calculateRecursive(pop + (pop * rate), years - 1, rate);
-        }
+        const labels = [];
+        const dataIter = [];
+        const dataRec = [];
 
-        let popChartInstance = null;
-        let perfChartInstance = null;
+        let currentIter = initialPop;
 
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.borderColor = '#334155';
-
-        function initCharts() {
-            const ctxPop = document.getElementById('popChart').getContext('2d');
-            const ctxPerf = document.getElementById('perfChart').getContext('2d');
-
-            popChartInstance = new Chart(ctxPop, {
-                type: 'line',
-                data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top', align: 'end' } },
-                    interaction: { mode: 'index', intersect: false },
-                }
-            });
-
-            perfChartInstance = new Chart(ctxPerf, {
-                type: 'bar',
-                data: { 
-                    labels: ['Iteratif', 'Rekursif'],
-                    datasets: [{
-                        label: 'Waktu Eksekusi (ms)',
-                        data: [0, 0],
-                        backgroundColor: ['#06b6d4', '#f43f5e'], 
-                        borderRadius: 6,
-                        barThickness: 40
-                    }]
-                },
-                options: {
-                    indexAxis: 'y', 
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true } }
-                }
-            });
-        }
-
-
-        
-        function startSimulation() {
-            const initialPop = parseFloat(document.getElementById('inputPop').value);
-            const years = parseInt(document.getElementById('inputYears').value);
-            const ratePercent = parseFloat(document.getElementById('inputRate').value);
-            const rate = ratePercent / 100;
-
-            if(years > 10000) {
-                alert("Peringatan: Tahun terlalu besar untuk Rekursi (Risiko Stack Overflow). Mohon kurangi < 10.000");
-                return;
-            }
-
-            const labels = [];
-            const dataIter = [];
-            const dataRec = [];
-
-            let currentIter = initialPop;
-            let currentRec = initialPop; 
-
-            for(let i=0; i<=years; i++) {
-                labels.push("Thn " + i);
-                
-                dataIter.push(currentIter);
-                currentIter = currentIter + (currentIter * rate);
-
-                if(i===0) dataRec.push(initialPop);
-                else 
-                   dataRec.push(calculateRecursive(initialPop, i, rate));
-                }
-            }
-
-            popChartInstance.data.labels = labels;
-            popChartInstance.data.datasets = [
-                {
-                    label: 'Iteratif (Loop)',
-                    data: dataIter,
-                    borderColor: '#06b6d4', 
-                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                    borderWidth: 6,        
-                    pointRadius: 0,
-                    tension: 0.3
-                },
-                {
-                    label: 'Rekursif (Self-Call)',
-                    data: dataRec,
-                    borderColor: '#f43f5e', 
-                    backgroundColor: 'rgba(244, 63, 94, 0.0)',
-                    borderWidth: 3,         
-                    borderDash: [5, 5],     
-                    pointRadius: 2,
-                    pointBackgroundColor: '#fff',
-                    tension: 0.3
-                }
-            ];
-            popChartInstance.update();
-
-            const iterations = 2000; 
+        for(let i=0; i<=years; i++) {
+            labels.push("Thn " + i);
             
+            dataIter.push(currentIter);
+            currentIter = currentIter + (currentIter * rate);
 
-            const t1 = performance.now();
-            for(let k=0; k<iterations; k++) {
-                calculateIterative(initialPop, years, rate);
+            if(i === 0) {
+                dataRec.push(initialPop);
+            } else {
+                dataRec.push(calculateRecursive(initialPop, i, rate));
             }
-            const t2 = performance.now();
-            const iterAvg = (t2 - t1).toFixed(4);
+        } 
 
-            const t3 = performance.now();
-            for(let k=0; k<iterations; k++) {
-                calculateRecursive(initialPop, years, rate);
+        popChartInstance.data.labels = labels;
+        popChartInstance.data.datasets = [
+            {
+                label: 'Iteratif (Loop)',
+                data: dataIter,
+                borderColor: '#06b6d4', 
+                backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                borderWidth: 3,        
+                pointRadius: 0,
+                tension: 0.3
+            },
+            {
+                label: 'Rekursif (Self-Call)',
+                data: dataRec,
+                borderColor: '#f43f5e', 
+                borderWidth: 2,         
+                borderDash: [5, 5],     
+                pointRadius: 0,
+                tension: 0.3
             }
-            const t4 = performance.now();
-            const recAvg = (t4 - t3).toFixed(4);
+        ];
+        popChartInstance.update();
 
-
-            document.getElementById('resIterTime').innerText = iterAvg;
-            document.getElementById('resRecTime').innerText = recAvg;
-
-
-            perfChartInstance.data.datasets[0].data = [parseFloat(iterAvg), parseFloat(recAvg)];
-            perfChartInstance.update();
+        const iterations = 500;
+        
+        const t1 = performance.now();
+        for(let k=0; k<iterations; k++) {
+            calculateIterative(initialPop, years, rate);
         }
+        const t2 = performance.now();
+        const iterAvg = ((t2 - t1) / iterations).toFixed(4);
 
+        const t3 = performance.now();
+        for(let k=0; k<iterations; k++) {
+            calculateRecursive(initialPop, years, rate);
+        }
+        const t4 = performance.now();
+        const recAvg = ((t4 - t3) / iterations).toFixed(4);
 
-        window.onload = function() {
-            initCharts();
-            startSimulation(); 
-        };
+        document.getElementById('resIterTime').innerText = iterAvg;
+        document.getElementById('resRecTime').innerText = recAvg;
 
-    </script>
+        perfChartInstance.data.datasets[0].data = [parseFloat(iterAvg), parseFloat(recAvg)];
+        perfChartInstance.update();
+    }
+
+    window.onload = function() {
+        initCharts();
+        startSimulation(); 
+    };
+</script>
 </body>
 </html>
